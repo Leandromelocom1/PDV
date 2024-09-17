@@ -1,0 +1,77 @@
+/* Ajustes no layout para um visual mais profissional */
+.venda-container {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px;
+}
+
+.produto-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.produto-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.carrinho {
+  padding: 20px;
+}
+
+.carrinho h2 {
+  font-size: 22px;
+  margin-bottom: 15px;
+}
+
+.carrinho ul {
+  list-style: none;
+  padding: 0;
+}
+
+.carrinho ul li {
+  margin-bottom: 10px;
+  font-size: 16px;
+  padding: 10px 0;
+}
+
+.carrinho .btn {
+  padding: 12px;
+  font-size: 16px;
+  margin-top: 10px;
+}
+
+.carrinho .finalizar {
+  background-color: #27ae60;
+}
+
+.carrinho .finalizar:hover {
+  background-color: #229954;
+}
+
+.carrinho .cancelar {
+  background-color: #e74c3c;
+}
+
+.carrinho .cancelar:hover {
+  background-color: #c0392b;
+}
+
+.pagamento-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  z-index: 10;
+}
+
+.pagamento-modal h2 {
+  margin-bottom: 20px;
+}
+
+.pagamento-modal .btn {
+  margin-bottom: 10px;
+}
