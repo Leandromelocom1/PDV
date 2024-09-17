@@ -7,8 +7,9 @@ const Venda = () => {
   const [carrinho, setCarrinho] = useState([]);
   const [produtos, setProdutos] = useState([]);
   const [total, setTotal] = useState(0);
-  const [mostrarPagamento, setMostrarPagamento] = useState(false);
+  const [mostrarPagamento, setMostrarPagamento] = useState(false); // Variável utilizada para exibir modal de pagamento
   const [numeroPedido, setNumeroPedido] = useState(1); // Inicializa o número do pedido
+  const [caixaAberto, setCaixaAberto] = useState(false); // Estado para verificar se o caixa está aberto
 
   // Função para buscar os produtos do backend
   useEffect(() => {
@@ -22,10 +23,22 @@ const Venda = () => {
     };
 
     fetchProdutos();
+
+    // Verificar se o caixa está aberto e o número de pedidos (usando localStorage)
+    const caixaStatus = localStorage.getItem('caixaAberto');
+    const pedidoAtual = localStorage.getItem('numeroPedidos');
+    
+    setCaixaAberto(caixaStatus === 'true');
+    setNumeroPedido(pedidoAtual ? parseInt(pedidoAtual, 10) : 1); // Recuperar número de pedido ou iniciar em 1
   }, []);
 
   // Função para adicionar produto no carrinho
   const adicionarProduto = (produto) => {
+    if (!caixaAberto) {
+      alert('Você precisa abrir o caixa antes de adicionar produtos.');
+      return;
+    }
+
     const itemExistente = carrinho.find((item) => item._id === produto._id);
 
     if (produto.estoque <= 0) {
@@ -46,13 +59,6 @@ const Venda = () => {
     setTotal(total + produto.preco);
   };
 
-  // Função para remover produto do carrinho
-  const removerProduto = (produto) => {
-    const novoCarrinho = carrinho.filter((item) => item._id !== produto._id);
-    setCarrinho(novoCarrinho);
-    setTotal(total - produto.preco * produto.quantidade);
-  };
-
   // Função para alterar a quantidade de produtos no carrinho
   const alterarQuantidade = (produto, novaQuantidade) => {
     const novaQuantidadeNumerica = parseInt(novaQuantidade, 10);
@@ -70,8 +76,20 @@ const Venda = () => {
     }
   };
 
+  // Função para remover produto do carrinho
+  const removerProduto = (produto) => {
+    const novoCarrinho = carrinho.filter((item) => item._id !== produto._id);
+    setCarrinho(novoCarrinho);
+    setTotal(total - produto.preco * produto.quantidade);
+  };
+
   // Função para finalizar a compra
   const finalizarCompra = () => {
+    if (!caixaAberto) {
+      alert('Você precisa abrir o caixa antes de realizar vendas.');
+      return;
+    }
+
     if (carrinho.length > 0) {
       setMostrarPagamento(true);
     } else {
@@ -98,11 +116,15 @@ const Venda = () => {
       // Enviar os dados para o backend
       const response = await axios.post('http://localhost:5000/api/vendas', venda);
 
-      console.log('Resposta do backend:', response.data);  // Verificar resposta do backend
+      console.log('Resposta do backend:', response.data);
       setCarrinho([]);
       setTotal(0);
       setMostrarPagamento(false);
-      setNumeroPedido(numeroPedido + 1);  // Incrementar o número do pedido
+
+      const novoNumeroPedido = numeroPedido + 1;
+      setNumeroPedido(novoNumeroPedido);  // Incrementar o número do pedido
+      localStorage.setItem('numeroPedidos', novoNumeroPedido); // Persistir número do pedido no localStorage
+
       alert(`Compra finalizada com pagamento via: ${metodoPagamento}`);
     } catch (error) {
       console.error('Erro ao salvar a venda:', error.response?.data || error.message);
@@ -121,12 +143,6 @@ const Venda = () => {
     setMostrarPagamento(false);
   };
 
-  // Função para fechar o caixa e resetar o número do pedido
-  const fecharCaixa = () => {
-    setNumeroPedido(1);  // Resetar o número do pedido
-    alert('Caixa fechado. Número de pedido foi resetado.');
-  };
-
   return (
     <div className="container mt-5">
       <div className="row">
@@ -139,12 +155,12 @@ const Venda = () => {
               produtos.map((produto) => (
                 <div key={produto._id} className="col-md-4 mb-4">
                   <div
-                    className={`card shadow-sm h-100 ${produto.estoque === 0 ? 'apagado' : ''}`} // Apaga o produto quando estoque for zero
+                    className={`card shadow-sm h-100 ${produto.estoque === 0 ? 'apagado' : ''}`}
                     onClick={() => adicionarProduto(produto)}
                     style={{ cursor: produto.estoque > 0 ? 'pointer' : 'not-allowed' }}
                   >
                     <div className="card-body text-center">
-                      <span style={{ fontSize: '3rem' }}>{produto.estoque > 0 ? produto.icone : '❌'}</span> {/* Ícone apagado se estoque for zero */}
+                      <span style={{ fontSize: '3rem' }}>{produto.estoque > 0 ? produto.icone : '❌'}</span>
                       <h5 className="card-title mt-3">{produto.nome}</h5>
                       <p className="card-text">R$ {produto.preco.toFixed(2)}</p>
                       <p className="text-danger">
@@ -160,7 +176,7 @@ const Venda = () => {
 
         <div className="col-lg-4">
           <div className="card shadow-lg p-3 mb-5 bg-white rounded">
-            <h3 className="text-primary">Pedido #{numeroPedido}</h3>  {/* Exibir o número do pedido */}
+            <h3 className="text-primary">Pedido #{numeroPedido}</h3>
             {carrinho.length === 0 ? (
               <p className="text-muted">Carrinho vazio</p>
             ) : (
@@ -194,9 +210,6 @@ const Venda = () => {
             </button>
             <button className="btn btn-secondary btn-block" onClick={cancelarCompra}>
               Cancelar
-            </button>
-            <button className="btn btn-warning btn-block" onClick={fecharCaixa}> {/* Botão para fechar o caixa */}
-              Fechar Caixa
             </button>
           </div>
 

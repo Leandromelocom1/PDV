@@ -6,15 +6,16 @@ const RelatoriosVendas = () => {
   const [dataFiltro, setDataFiltro] = useState('');
   const [erro, setErro] = useState('');
 
-  // Função para buscar as vendas filtradas
+  // Função para buscar as vendas filtradas ou todas as vendas
   const fetchVendas = async (data) => {
     try {
       const response = await axios.get('http://localhost:5000/api/vendas', {
         params: { dataVenda: data }
       });
       setVendas(response.data);
+      setErro('');  // Limpar mensagem de erro caso sucesso
     } catch (error) {
-      console.error('Erro ao buscar vendas:', error.response || error.message);
+      console.error('Erro ao buscar vendas:', error.response?.data || error.message);
       setErro('Erro ao buscar vendas. Verifique a conexão com o servidor.');
     }
   };
@@ -23,7 +24,8 @@ const RelatoriosVendas = () => {
   const handleFilter = (e) => {
     e.preventDefault();
     if (dataFiltro) {
-      fetchVendas(dataFiltro);  // Enviar a data para o backend
+      const formattedDate = new Date(dataFiltro).toISOString().split('T')[0]; // Garantir formato ISO
+      fetchVendas(formattedDate);  // Enviar a data formatada para o backend
     } else {
       fetchVendas();  // Buscar todas as vendas se a data não for fornecida
     }

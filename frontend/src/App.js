@@ -3,9 +3,9 @@ import { Route, Routes, Link } from 'react-router-dom';
 import Home from './components/Home';
 import Venda from './components/Venda';
 import MenuGerencial from './components/MenuGerencial';
-// import CadastroProduto from './components/CadastroProduto';
-import RelatoriosVendas from './components/RelatoriosVendas';  // Importando o componente de Relatórios de Vendas
-import Estoque from './components/Estoque';  // Importando o componente de Estoque
+import RelatoriosVendas from './components/RelatoriosVendas';
+import Estoque from './components/Estoque';
+import Caixa from './components/Caixa';  // Importar o componente Caixa
 
 const App = () => {
   return (
@@ -24,14 +24,14 @@ const App = () => {
               <li className="nav-item">
                 <Link className="nav-link" to="/menu-gerencial">Menu Gerencial</Link>
               </li>
-              {/* <li className="nav-item">
-                <Link className="nav-link" to="/cadastro-produto">Cadastro de Produto</Link>
-              </li> */}
               <li className="nav-item">
                 <Link className="nav-link" to="/relatorios-vendas">Relatórios de Vendas</Link>
               </li>
-              <li className="nav-item">  {/* Novo link para Estoque */}
-                <Link className="nav-link" to="/estoque">Estoque</Link>  {/* Link para Estoque */}
+              <li className="nav-item">
+                <Link className="nav-link" to="/estoque">Estoque</Link>
+              </li>
+              <li className="nav-item">  {/* Novo link para Caixa */}
+                <Link className="nav-link" to="/caixa">Caixa</Link>  {/* Link para Caixa */}
               </li>
             </ul>
           </div>
@@ -42,9 +42,9 @@ const App = () => {
         <Route path="/" element={<Home />} />
         <Route path="/venda" element={<Venda />} />
         <Route path="/menu-gerencial" element={<MenuGerencial />} />
-        {/* <Route path="/cadastro-produto" element={<CadastroProduto />} /> */}
         <Route path="/relatorios-vendas" element={<RelatoriosVendas />} />
-        <Route path="/estoque" element={<Estoque />} />  {/* Nova rota para Estoque */}
+        <Route path="/estoque" element={<Estoque />} />
+        <Route path="/caixa" element={<Caixa />} />  {/* Nova rota para Caixa */}
       </Routes>
     </div>
   );

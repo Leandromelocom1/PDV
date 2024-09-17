@@ -33,6 +33,10 @@ app.use('/api', productRoutes);
 const saleRoutes = require('./routes/saleRoutes');
 app.use('/api/vendas', saleRoutes);  // Prefixo correto para as rotas de vendas
 
+// Importar as rotas de caixa
+const caixaRoutes = require('./routes/caixaRoutes');
+app.use('/api/caixa', caixaRoutes);  // Rotas de controle de caixa
+
 // Porta do servidor
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

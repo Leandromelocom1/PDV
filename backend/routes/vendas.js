@@ -1,6 +1,6 @@
+// routes/vendas.js
 const express = require('express');
 const router = express.Router();
-const Product = require('../models/Product');
 const Sale = require('../models/Sale');
 const Caixa = require('../models/Caixa');
 
@@ -8,11 +8,6 @@ const Caixa = require('../models/Caixa');
 router.post('/', async (req, res) => {
   try {
     const { produtos, total, metodoPagamento } = req.body;
-
-    // Verificar se os campos essenciais foram fornecidos
-    if (!Array.isArray(produtos) || produtos.length === 0 || typeof total !== 'number' || !metodoPagamento) {
-      return res.status(400).json({ message: 'Dados da venda incompletos ou inválidos' });
-    }
 
     // Verificar se o caixa está aberto
     const caixaAberto = await Caixa.findOne({ status: 'aberto' });
@@ -31,43 +26,37 @@ router.post('/', async (req, res) => {
       }
 
       if (produto.estoque < produtoVenda.quantidade) {
-        console.error(`Estoque insuficiente para o produto ${produto.nome}. Estoque atual: ${produto.estoque}, solicitado: ${produtoVenda.quantidade}`);
+        console.error(`Estoque insuficiente para o produto ${produto.nome}.`);
         return res.status(400).json({ message: `Estoque insuficiente para o produto ${produto.nome}` });
       }
 
-      // Atualizar o estoque do produto
       produto.estoque -= produtoVenda.quantidade;
 
-      // Verificar se o estoque atingiu o mínimo e gerar alerta
-      if (produto.estoque <= produto.estoqueMinimo) {
-        console.log(`Alerta: Estoque do produto ${produto.nome} está no limite mínimo.`);
-      }
-
-      await produto.save(); // Salvar o produto
+      await produto.save(); // Salvar o produto atualizado
     }
 
-    // Se tudo estiver OK, salvar a venda com os campos adequados
+    // Salvar a venda
     const novaVenda = new Sale({
       produtos,
       total,
       metodoPagamento,
-      dataVenda: new Date(), // Definir a data da venda
+      dataVenda: new Date(),
     });
 
-    await novaVenda.save(); // Salvar a venda
+    await novaVenda.save();
 
     // Incrementar o número de pedidos no caixa
     caixaAberto.numeroPedidos += 1;
-    await caixaAberto.save(); // Atualizar o caixa
+    await caixaAberto.save();
 
     res.status(201).json({ venda: novaVenda, numeroPedidos: caixaAberto.numeroPedidos });
   } catch (error) {
-    console.error('Erro ao processar a venda:', error.message); // Log detalhado do erro
+    console.error('Erro ao processar a venda:', error.message);
     res.status(500).json({ message: 'Erro ao processar a venda', error: error.message });
   }
 });
 
-// Rota para buscar vendas (GET)
+// Rota para buscar vendas
 router.get('/', async (req, res) => {
   try {
     const vendas = await Sale.find();
