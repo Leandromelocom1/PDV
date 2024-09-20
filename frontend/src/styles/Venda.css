@@ -1,77 +1,146 @@
-/* Ajustes no layout para um visual mais profissional */
-.venda-container {
+/* Melhorias para o layout */
+.container {
+  max-width: 100%; /* Para ocupar toda a largura da tela */
+}
+
+.row {
   display: flex;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  justify-content: space-around; /* Para garantir que os produtos fiquem bem distribuídos */
+}
+
+.card {
+  border-radius: 15px;
+  transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+  transform: scale(1.05); /* Adiciona um efeito de zoom ao passar o mouse */
+}
+
+.col-md-2 {
+  flex: 1 1 calc(20% - 20px); /* Define o tamanho das colunas para ocupar bem a tela */
+  margin: 10px; /* Espaçamento entre os produtos */
+}
+
+.produtos-disponiveis {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+}
+
+.cupom-fiscal {
   padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
 
-.produto-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+.pedido {
+  position: fixed;
+  top: 100px;
+  right: 20px;
+  width: 25%;
 }
 
-.produto-card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+.carrinho-vazio {
+  font-size: 1.2rem;
+  color: #777;
+  text-align: center;
 }
 
-.carrinho {
-  padding: 20px;
+.valor-total {
+  font-size: 1.5rem;
+  font-weight: bold;
 }
 
-.carrinho h2 {
-  font-size: 22px;
+.pagamento-btn {
   margin-bottom: 15px;
+  width: 500%;
+  height: 50px;
+  
 }
 
-.carrinho ul {
-  list-style: none;
-  padding: 0;
+
+.card {
+  transition: transform 0.3s, box-shadow 0.3s;
 }
 
-.carrinho ul li {
-  margin-bottom: 10px;
-  font-size: 16px;
-  padding: 10px 0;
+.card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.carrinho .btn {
-  padding: 12px;
-  font-size: 16px;
-  margin-top: 10px;
+.card.selecionado {
+  border: 2px solid #007bff; /* Destacar com uma borda azul */
 }
 
-.carrinho .finalizar {
-  background-color: #27ae60;
+.card.selecionado .card-body {
+  background-color: #e9faff; /* Fundo levemente azul ao selecionar */
 }
 
-.carrinho .finalizar:hover {
-  background-color: #229954;
-}
-
-.carrinho .cancelar {
-  background-color: #e74c3c;
-}
-
-.carrinho .cancelar:hover {
-  background-color: #c0392b;
-}
-
-.pagamento-modal {
+.pagamento-modal, .cupom-modal {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: #fff;
+  z-index: 1050;
+  background-color: white;
+  border-radius: 10px;
   padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  z-index: 10;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  width: 300px;
 }
 
-.pagamento-modal h2 {
-  margin-bottom: 20px;
+.pagamento-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1040;
 }
 
-.pagamento-modal .btn {
+.pagamento-modal button, .cupom-modal button {
+  width: 100%;
   margin-bottom: 10px;
+}
+
+.cupom-imprimir {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border: 1px solid #ddd;
+  margin: 20px 0;
+}
+
+.cupom-imprimir h3, .cupom-imprimir h4 {
+  margin: 0 0 10px;
+}
+
+@media print {
+  .pagamento-overlay, .pagamento-modal, .cupom-modal, .btn {
+    display: none;
+  }
+  
+  #cupom-fiscal {
+    display: block;
+  }
+}
+
+/* Venda.css */
+
+/* Estilos de impressão */
+@media print {
+  body * {
+    visibility: hidden; /* Oculta todo o conteúdo */
+  }
+  #cupom-fiscal, #cupom-fiscal * {
+    visibility: visible; /* Apenas o cupom fiscal será visível */
+  }
+  #cupom-fiscal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%; /* Garante que o cupom ocupe toda a largura disponível */
+  }
 }

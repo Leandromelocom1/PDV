@@ -6,6 +6,8 @@ import MenuGerencial from './components/MenuGerencial';
 import RelatoriosVendas from './components/RelatoriosVendas';
 import Estoque from './components/Estoque';
 import Caixa from './components/Caixa';  // Importar o componente Caixa
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 
 const App = () => {
   return (

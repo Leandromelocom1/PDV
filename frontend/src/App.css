@@ -27,3 +27,10 @@ h1 {
   color: #2980b9;
   text-decoration: underline;
 }
+
+/* App.css ou outro arquivo CSS global */
+img {
+  width: 150px;
+  height: 150px;
+  object-fit: cover; /* Mantém o aspecto da imagem, cortando o excesso */
+}

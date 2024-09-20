@@ -1,21 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import '../styles/Venda.css'; // Importar o arquivo CSS personalizado
+import '../styles/Venda.css'; 
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Venda = () => {
   const [carrinho, setCarrinho] = useState([]);
   const [produtos, setProdutos] = useState([]);
   const [total, setTotal] = useState(0);
-  const [mostrarPagamento, setMostrarPagamento] = useState(false); // Variável utilizada para exibir modal de pagamento
-  const [numeroPedido, setNumeroPedido] = useState(1); // Inicializa o número do pedido
-  const [caixaAberto, setCaixaAberto] = useState(false); // Estado para verificar se o caixa está aberto
+  const [mostrarPagamento, setMostrarPagamento] = useState(false); 
+  const [numeroPedido, setNumeroPedido] = useState(1); 
+  const [caixaAberto, setCaixaAberto] = useState(false);
+  const [codigoBarras, setCodigoBarras] = useState(''); 
+  const [produtoSelecionado, setProdutoSelecionado] = useState(null);
+  const [imprimirCupom, setImprimirCupom] = useState(false); 
+  const [cupomEmitido, setCupomEmitido] = useState(null); 
 
-  // Função para buscar os produtos do backend
   useEffect(() => {
     const fetchProdutos = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/produtos'); // Verifica se o backend está rodando na porta correta
+        const response = await axios.get('http://localhost:5000/api/produtos');
         setProdutos(response.data);
       } catch (error) {
         console.error('Erro ao buscar produtos:', error);
@@ -24,15 +27,25 @@ const Venda = () => {
 
     fetchProdutos();
 
-    // Verificar se o caixa está aberto e o número de pedidos (usando localStorage)
     const caixaStatus = localStorage.getItem('caixaAberto');
     const pedidoAtual = localStorage.getItem('numeroPedidos');
     
     setCaixaAberto(caixaStatus === 'true');
-    setNumeroPedido(pedidoAtual ? parseInt(pedidoAtual, 10) : 1); // Recuperar número de pedido ou iniciar em 1
+    setNumeroPedido(pedidoAtual ? parseInt(pedidoAtual, 10) : 1);
   }, []);
 
-  // Função para adicionar produto no carrinho
+  const adicionarProdutoPorCodigoBarras = (codigoBarras) => {
+    const produto = produtos.find(p => p.codigoBarras === codigoBarras);
+
+    if (!produto) {
+      alert('Produto não encontrado.');
+      return;
+    }
+
+    adicionarProduto(produto);
+    setCodigoBarras(''); 
+  };
+
   const adicionarProduto = (produto) => {
     if (!caixaAberto) {
       alert('Você precisa abrir o caixa antes de adicionar produtos.');
@@ -57,9 +70,9 @@ const Venda = () => {
 
     setCarrinho([...carrinho, { ...produto, quantidade: 1 }]);
     setTotal(total + produto.preco);
+    setProdutoSelecionado(produto._id);
   };
 
-  // Função para alterar a quantidade de produtos no carrinho
   const alterarQuantidade = (produto, novaQuantidade) => {
     const novaQuantidadeNumerica = parseInt(novaQuantidade, 10);
     if (novaQuantidadeNumerica > produto.estoque) {
@@ -76,14 +89,12 @@ const Venda = () => {
     }
   };
 
-  // Função para remover produto do carrinho
   const removerProduto = (produto) => {
     const novoCarrinho = carrinho.filter((item) => item._id !== produto._id);
     setCarrinho(novoCarrinho);
     setTotal(total - produto.preco * produto.quantidade);
   };
 
-  // Função para finalizar a compra
   const finalizarCompra = () => {
     if (!caixaAberto) {
       alert('Você precisa abrir o caixa antes de realizar vendas.');
@@ -97,7 +108,6 @@ const Venda = () => {
     }
   };
 
-  // Função para confirmar pagamento e enviar dados para o backend
   const confirmarPagamento = async (metodoPagamento) => {
     try {
       const venda = {
@@ -108,37 +118,44 @@ const Venda = () => {
         })),
         total,
         metodoPagamento,
-        numeroPedido,  // Enviar o número do pedido
+        numeroPedido,
       };
 
-      console.log('Enviando venda:', venda);  // Log para depuração
+      await axios.post('http://localhost:5000/api/vendas', venda);
 
-      // Enviar os dados para o backend
-      const response = await axios.post('http://localhost:5000/api/vendas', venda);
+      const cupom = {
+        pedido: numeroPedido,
+        itens: carrinho,
+        total,
+        emitidoEm: new Date(),
+        metodoPagamento,
+      };
+      setCupomEmitido(cupom);
 
-      console.log('Resposta do backend:', response.data);
+      const novoNumeroPedido = numeroPedido + 1;
       setCarrinho([]);
       setTotal(0);
       setMostrarPagamento(false);
+      setNumeroPedido(novoNumeroPedido);
+      localStorage.setItem('numeroPedidos', novoNumeroPedido);
 
-      const novoNumeroPedido = numeroPedido + 1;
-      setNumeroPedido(novoNumeroPedido);  // Incrementar o número do pedido
-      localStorage.setItem('numeroPedidos', novoNumeroPedido); // Persistir número do pedido no localStorage
+      setImprimirCupom(true); 
 
-      alert(`Compra finalizada com pagamento via: ${metodoPagamento}`);
     } catch (error) {
       console.error('Erro ao salvar a venda:', error.response?.data || error.message);
       alert('Erro ao finalizar a compra, verifique os dados e tente novamente.');
     }
   };
 
-  // Função para cancelar a compra
+  const imprimirCupomFiscal = () => {
+    window.print();
+  };
+
   const cancelarCompra = () => {
     setCarrinho([]);
     setTotal(0);
   };
 
-  // Função para fechar o modal de pagamento
   const fecharModalPagamento = () => {
     setMostrarPagamento(false);
   };
@@ -148,14 +165,33 @@ const Venda = () => {
       <div className="row">
         <div className="col-lg-8 mb-4">
           <h2 className="text-primary">Produtos Disponíveis</h2>
+
+          {/* Campo para leitura de código de barras */}
+          <div className="form-group">
+            <label htmlFor="codigoBarras">Código de Barras</label>
+            <input
+              type="text"
+              id="codigoBarras"
+              className="form-control"
+              value={codigoBarras}
+              onChange={(e) => setCodigoBarras(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  adicionarProdutoPorCodigoBarras(codigoBarras);
+                }
+              }}
+              placeholder="Escaneie ou digite o código de barras"
+            />
+          </div>
+
           <div className="row">
             {produtos.length === 0 ? (
               <p>Nenhum produto disponível.</p>
             ) : (
               produtos.map((produto) => (
-                <div key={produto._id} className="col-md-4 mb-4">
+                <div key={produto._id} className="col-md-2 mb-4">
                   <div
-                    className={`card shadow-sm h-100 ${produto.estoque === 0 ? 'apagado' : ''}`}
+                    className={`card shadow-sm h-100 ${produto.estoque === 0 ? 'apagado' : ''} ${produtoSelecionado === produto._id ? 'selecionado' : ''}`}
                     onClick={() => adicionarProduto(produto)}
                     style={{ cursor: produto.estoque > 0 ? 'pointer' : 'not-allowed' }}
                   >
@@ -213,19 +249,42 @@ const Venda = () => {
             </button>
           </div>
 
-          {/* Modal de Pagamento */}
           {mostrarPagamento && (
-            <div className="pagamento-modal bg-light p-4 position-relative">
-              <button
-                className="btn-close position-absolute top-0 end-0"
-                aria-label="Fechar"
-                onClick={fecharModalPagamento}
-              ></button>
-              <h2>Forma de Pagamento</h2>
-              <button className="btn btn-primary mb-2" onClick={() => confirmarPagamento('Dinheiro')}>Dinheiro</button>
-              <button className="btn btn-secondary mb-2" onClick={() => confirmarPagamento('Cartão de Crédito')}>Cartão de Crédito</button>
-              <button className="btn btn-success mb-2" onClick={() => confirmarPagamento('Cartão de Débito')}>Cartão de Débito</button>
-              <button className="btn btn-warning mb-2" onClick={() => confirmarPagamento('Mumbuca')}>Mumbuca</button>
+            <>
+              <div className="pagamento-overlay" onClick={fecharModalPagamento}></div>
+              <div className="pagamento-modal bg-light p-4 position-relative">
+                <button
+                  className="btn-close position-absolute top-0 end-0"
+                  aria-label="Fechar"
+                  onClick={fecharModalPagamento}
+                ></button>
+                <h2>Forma de Pagamento</h2>
+                <button className="btn btn-primary mb-2" onClick={() => confirmarPagamento('Dinheiro')}>Dinheiro</button>
+                <button className="btn btn-secondary mb-2" onClick={() => confirmarPagamento('Cartão de Crédito')}>Cartão de Crédito</button>
+                <button className="btn btn-success mb-2" onClick={() => confirmarPagamento('Cartão de Débito')}>Cartão de Débito</button>
+                <button className="btn btn-warning mb-2" onClick={() => confirmarPagamento('Mumbuca')}>Mumbuca</button>
+              </div>
+            </>
+          )}
+
+          {imprimirCupom && (
+            <div id="cupom-fiscal" className="cupom-imprimir">
+              <h3>Cupom Fiscal - Pedido #{cupomEmitido?.pedido}</h3>
+              <p><strong>CNPJ:</strong> 99.999.999/9999-99</p>
+              <p><strong>Endereço:</strong> Rua Principal, 123, Centro, Cidade</p>
+              <hr />
+              <h4>Detalhes da Venda:</h4>
+              <ul>
+                {cupomEmitido?.itens.map((item, index) => (
+                  <li key={index}>
+                    {item.nome} - Quantidade: {item.quantidade} - R$ {item.preco.toFixed(2)}
+                  </li>
+                ))}
+              </ul>
+              <hr />
+              <p><strong>Total:</strong> R$ {cupomEmitido?.total.toFixed(2)}</p>
+              <p><strong>Forma de Pagamento:</strong> {cupomEmitido?.metodoPagamento}</p>
+              <button className="btn btn-primary" onClick={imprimirCupomFiscal}>Imprimir</button>
             </div>
           )}
         </div>

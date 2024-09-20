@@ -4,14 +4,13 @@ import axios from 'axios';
 const Estoque = () => {
   const [nome, setNome] = useState('');
   const [preco, setPreco] = useState('');
-  const [icone, setIcone] = useState('');
+  const [codigoBarras, setCodigoBarras] = useState(''); // Novo campo código de barras
   const [estoque, setEstoque] = useState('');
   const [estoqueMinimo, setEstoqueMinimo] = useState('');
   const [mensagem, setMensagem] = useState('');
   const [produtos, setProdutos] = useState([]);
   const [produtoSelecionado, setProdutoSelecionado] = useState('');
 
-  // Função para buscar os produtos cadastrados no backend
   useEffect(() => {
     const fetchProdutos = async () => {
       try {
@@ -25,40 +24,38 @@ const Estoque = () => {
     fetchProdutos();
   }, []);
 
-  // Função para cadastrar ou atualizar um produto
   const cadastrarOuAtualizarProduto = async (e) => {
     e.preventDefault();
 
     try {
-      const produtoData = {
-        nome: nome.toUpperCase(), // Sempre enviar o nome em caixa alta
-        preco: parseFloat(preco),
-        icone,
-        estoque: parseInt(estoque, 10),
-        estoqueMinimo: parseInt(estoqueMinimo, 10),
+      const produto = {
+        nome: nome.toUpperCase(),
+        preco,
+        codigoBarras, // Inclui o código de barras
+        estoque,
+        estoqueMinimo
       };
 
       if (produtoSelecionado) {
         // Atualizar o produto existente
-        const response = await axios.put(`http://localhost:5000/api/produtos/${produtoSelecionado}`, produtoData);
+        const response = await axios.put(`http://localhost:5000/api/produtos/${produtoSelecionado}`, produto);
         setMensagem(`Produto ${response.data.nome} atualizado com sucesso!`);
       } else {
         // Cadastrar um novo produto
-        const response = await axios.post('http://localhost:5000/api/produtos', produtoData);
+        const response = await axios.post('http://localhost:5000/api/produtos', produto);
         setMensagem(`Produto ${response.data.nome} cadastrado com sucesso!`);
-        setProdutos([...produtos, response.data]); // Atualiza a lista de produtos
+        setProdutos([...produtos, response.data]); 
       }
 
       // Limpar campos do formulário
       setNome('');
       setPreco('');
-      setIcone('');
+      setCodigoBarras(''); // Limpa o campo de código de barras
       setEstoque('');
       setEstoqueMinimo('');
       setProdutoSelecionado('');
 
     } catch (error) {
-      // Mostrar mensagem de erro se o produto já existir ou houver outro problema
       if (error.response && error.response.data.message) {
         setMensagem(error.response.data.message);
       } else {
@@ -67,7 +64,6 @@ const Estoque = () => {
     }
   };
 
-  // Função para selecionar um produto existente do dropdown
   const selecionarProduto = (e) => {
     const produtoId = e.target.value;
     const produto = produtos.find(p => p._id === produtoId);
@@ -75,14 +71,14 @@ const Estoque = () => {
     if (produto) {
       setNome(produto.nome);
       setPreco(produto.preco);
-      setIcone(produto.icone);
+      setCodigoBarras(produto.codigoBarras); // Preenche o código de barras
       setEstoque(produto.estoque);
       setEstoqueMinimo(produto.estoqueMinimo);
       setProdutoSelecionado(produtoId);
     } else {
       setNome('');
       setPreco('');
-      setIcone('');
+      setCodigoBarras(''); 
       setEstoque('');
       setEstoqueMinimo('');
       setProdutoSelecionado('');
@@ -93,7 +89,6 @@ const Estoque = () => {
     <div className="container mt-5">
       <h2 className="text-primary">Gerenciamento de Estoque</h2>
 
-      {/* Dropdown de produtos existentes */}
       <div className="form-group">
         <label>Selecione um Produto Cadastrado</label>
         <div className="d-flex">
@@ -105,7 +100,6 @@ const Estoque = () => {
               </option>
             ))}
           </select>
-          {/* Botão para adicionar um novo produto */}
           <button
             type="button"
             className="btn btn-success ml-2"
@@ -116,7 +110,6 @@ const Estoque = () => {
         </div>
       </div>
 
-      {/* Formulário para cadastro/atualização de produto */}
       <form onSubmit={cadastrarOuAtualizarProduto}>
         <div className="form-group">
           <label>Nome do Produto</label>
@@ -139,12 +132,13 @@ const Estoque = () => {
           />
         </div>
         <div className="form-group">
-          <label>Ícone (Opcional)</label>
+          <label>Código de Barras</label>
           <input
             type="text"
             className="form-control"
-            value={icone}
-            onChange={(e) => setIcone(e.target.value)}
+            value={codigoBarras} 
+            onChange={(e) => setCodigoBarras(e.target.value)}
+            required
           />
         </div>
         <div className="form-group">

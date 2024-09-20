@@ -4,44 +4,44 @@ import axios from 'axios';
 const CadastroProduto = () => {
   const [nome, setNome] = useState('');
   const [preco, setPreco] = useState('');
-  const [icone, setIcone] = useState('');
-  const [estoque, setEstoque] = useState(''); // Novo campo de estoque
+  const [imagem, setImagem] = useState(null); // Alteração para imagem
+  const [estoque, setEstoque] = useState(''); // Campo de estoque
   const [mensagem, setMensagem] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!nome || !preco || !estoque) { // Verifique se o campo de estoque foi preenchido
+    if (!nome || !preco || !estoque || !imagem) { // Verifique se o campo de imagem foi preenchido
       setMensagem('Preencha todos os campos.');
       return;
     }
 
-    const novoProduto = {
-      nome: nome.toUpperCase(), // Convertendo o nome para caixa alta para evitar duplicação
-      preco: parseFloat(preco),
-      icone,
-      estoque: parseInt(estoque, 10), // Parse do estoque para número
-    };
+    const formData = new FormData(); // Usar FormData para enviar arquivos
+    formData.append('nome', nome.toUpperCase()); // Nome convertido para caixa alta
+    formData.append('preco', parseFloat(preco));
+    formData.append('imagem', imagem); // Adicionando a imagem
+    formData.append('estoque', parseInt(estoque, 10));
 
     try {
       // Verificar se o produto já existe
       const produtoExistente = await axios.get(`http://localhost:5000/api/produtos/${nome.toUpperCase()}`);
       
       if (produtoExistente.data) {
-        // Se o produto já existe, atualize o estoque
-        const estoqueAtualizado = produtoExistente.data.estoque + novoProduto.estoque;
+        const estoqueAtualizado = produtoExistente.data.estoque + parseInt(estoque, 10);
         await axios.put(`http://localhost:5000/api/produtos/${produtoExistente.data._id}`, { estoque: estoqueAtualizado });
         setMensagem(`Estoque do produto ${produtoExistente.data.nome} atualizado com sucesso!`);
       } else {
-        // Se o produto não existir, crie um novo
-        const response = await axios.post('http://localhost:5000/api/produtos', novoProduto);
+        // Se o produto não existir, crie um novo com imagem
+        const response = await axios.post('http://localhost:5000/api/produtos', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
         setMensagem(`Produto ${response.data.nome} cadastrado com sucesso!`);
       }
-      
+
       setNome('');
       setPreco('');
-      setIcone('');
-      setEstoque(''); // Limpar o campo de estoque
+      setImagem(null); // Limpar o campo de imagem
+      setEstoque('');
     } catch (error) {
       setMensagem('Erro ao cadastrar ou atualizar o produto. Tente novamente.');
     }
@@ -50,7 +50,7 @@ const CadastroProduto = () => {
   return (
     <div className="container mt-5">
       <h2 className="text-primary">Cadastro de Produto / Atualização de Estoque</h2>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} encType="multipart/form-data"> {/* Multipart para upload de arquivo */}
         <div className="form-group">
           <label>Nome do Produto</label>
           <input
@@ -70,17 +70,15 @@ const CadastroProduto = () => {
           />
         </div>
         <div className="form-group">
-          <label>Ícone (Opcional)</label>
+          <label>Imagem do Produto</label> {/* Campo de upload da imagem */}
           <input
-            type="text"
+            type="file"
             className="form-control"
-            value={icone}
-            onChange={(e) => setIcone(e.target.value)}
-            placeholder="Ex: 🍕"
+            onChange={(e) => setImagem(e.target.files[0])} // Capturar o arquivo de imagem
           />
         </div>
         <div className="form-group">
-          <label>Quantidade no Estoque</label> {/* Campo para alimentar o estoque */}
+          <label>Quantidade no Estoque</label>
           <input
             type="number"
             className="form-control"
