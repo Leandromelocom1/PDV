@@ -1,8 +1,8 @@
-// routes/vendas.js
 const express = require('express');
 const router = express.Router();
 const Sale = require('../models/Sale');
 const Caixa = require('../models/Caixa');
+const Product = require('../models/Product'); // Certifique-se de importar o modelo de produto
 
 // Rota para criar uma nova venda
 router.post('/', async (req, res) => {
