@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../styles/Venda.css'; 
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { useNavigate } from 'react-router-dom'; // Importando useNavigate
 
 const Venda = () => {
   const [carrinho, setCarrinho] = useState([]);
@@ -14,11 +15,12 @@ const Venda = () => {
   const [produtoSelecionado, setProdutoSelecionado] = useState(null);
   const [imprimirCupom, setImprimirCupom] = useState(false); 
   const [cupomEmitido, setCupomEmitido] = useState(null); 
+  const navigate = useNavigate(); // Hook para redirecionamento
 
   useEffect(() => {
     const fetchProdutos = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/produtos');
+        const response = await axios.get('http://192.168.0.78:5000/api/produtos');
         setProdutos(response.data);
       } catch (error) {
         console.error('Erro ao buscar produtos:', error);
@@ -121,7 +123,7 @@ const Venda = () => {
         numeroPedido,
       };
 
-      await axios.post('http://localhost:5000/api/vendas', venda);
+      await axios.post('http://192.168.0.78:5000/api/vendas', venda);
 
       const cupom = {
         pedido: numeroPedido,
@@ -140,6 +142,9 @@ const Venda = () => {
       localStorage.setItem('numeroPedidos', novoNumeroPedido);
 
       setImprimirCupom(true); 
+
+      // Redirecionar para a página inicial ou para uma página de sucesso após a venda
+      navigate('/'); 
 
     } catch (error) {
       console.error('Erro ao salvar a venda:', error.response?.data || error.message);
