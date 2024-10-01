@@ -6,17 +6,23 @@ import MenuGerencial from './components/MenuGerencial';
 import RelatoriosVendas from './components/RelatoriosVendas';
 import Estoque from './components/Estoque';
 import Caixa from './components/Caixa';
-import { AuthProvider, useAuth } from './context/AuthContext'; // Remover se o AuthContext não for mais necessário
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-// Remover o componente PrivateRoute se não for mais necessário
 const App = () => {
   return (
     <div>
       <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
         <div className="container-fluid">
           <Link className="navbar-brand" to="/">PDV</Link>
-          <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <button
+            className="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+            aria-controls="navbarNav"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
             <span className="navbar-toggler-icon"></span>
           </button>
           <div className="collapse navbar-collapse" id="navbarNav">
@@ -41,24 +47,18 @@ const App = () => {
         </div>
       </nav>
 
-      {/* Remover a rota de login */}
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/venda" element={<Venda />} />
-        <Route path="/menu-gerencial" element={<MenuGerencial />} />
-        <Route path="/relatorios-vendas" element={<RelatoriosVendas />} />
-        <Route path="/estoque" element={<Estoque />} />
-        <Route path="/caixa" element={<Caixa />} />
-      </Routes>
+      <div className="container mt-4">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/venda" element={<Venda />} />
+          <Route path="/menu-gerencial" element={<MenuGerencial />} />
+          <Route path="/relatorios-vendas" element={<RelatoriosVendas />} />
+          <Route path="/estoque" element={<Estoque />} />
+          <Route path="/caixa" element={<Caixa />} />
+        </Routes>
+      </div>
     </div>
   );
 };
 
-// Remover o AuthProvider se não for mais necessário
-const RootApp = () => (
-  <AuthProvider>
-    <App />
-  </AuthProvider>
-);
-
-export default RootApp;
+export default App;
